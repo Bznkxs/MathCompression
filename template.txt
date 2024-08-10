@@ -1,0 +1,42 @@
+Your job is to turn a specific question-answer pair into a symbolic answer form. Then, use the symbolic form to implement a template_generator function that creates a new question that will randomly sample the variables, fill the template, and calculate the answer.
+Note 1:  You should first think about the constraints of the variables, e.g. range and type, before writing the generator.
+Note 2: The new question should have a **totally different setup/background** from the original one but still follow the symbolic answer expression
+
+Example:
+
+Question:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+
+Answer:
+Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day. She makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market. #### 18
+
+Symbolic Answer (Latex):
+$(x-y-z)p$
+
+Template Generator:
+python
+import random
+def template_generator():
+    # Define ranges for the variables
+    x = random.randint(10, 50)  # Total items produced per day
+    y = random.randint(1, x - 1)  # Items used for personal consumption
+    z = random.randint(1, x - y - 1)  # Items used for another purpose
+    p = random.randint(1, 10)  # Price per item in dollars
+
+    # Fill the template with the new scenario
+    question = f"A candy factory produces {x} pieces of candy per day. The factory workers eat {y}             
+    pieces during their shifts and donate {z} pieces to a local charity. They sell the remainder at a local 
+    shop for ${p} per piece. How much in dollars do they make every day at the shop?"
+
+    # Calculate the symbolic answer
+    remainder_items = x - y - z
+    daily_earnings = remainder_items * p
+
+
+Now consider the following:
+
+Question:
+James writes a 3-page letter to 2 different friends twice a week. How many pages does he write a year?
+
+Answer:
+He writes each friend 3*2=<<3*2=6>>6 pages a week So he writes 6*2=<<6*2=12>>12 pages every week That means he writes 12*52=<<12*52=624>>624 pages a year #### 624
