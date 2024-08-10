@@ -19,14 +19,15 @@ def generate_some_template(client, model="gpt-4o-mini", message_content=""):
         with open(f"responses/{response_id}.json", "r") as f:
             response_dict = json.load(f)
         print("Using cached response...")
-        return response_dict["choices"][0]["message"]["content"], response_id
+        return [response_dict["choices"][i]["message"]["content"] for i in range(len(response_dict["choices"]))], response_id
     print("Creating new response...")
     response = client.chat.completions.create(
       model=model,
       messages=[
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": message_content},
-      ]
+      ],
+        n=10
     )
     response_dict = response.to_dict()
     os.makedirs("responses", exist_ok=True)
@@ -35,7 +36,7 @@ def generate_some_template(client, model="gpt-4o-mini", message_content=""):
     index_dict[message_content] = response.id
     with open("responses/index.json", "w") as f:
         json.dump(index_dict, f, indent=2)
-    return response.choices[0].message.content, response.id
+    return [response.choices[i].message.content for i in range(len(response.choices))], response.id
 
 
 def read_raw_template_from_file(file_path):
@@ -90,13 +91,16 @@ if __name__ == '__main__':
         print(processed_template)
         print("\n")
         print("-----------------------------")
-        generated_response, response_id = generate_some_template(client, message_content=processed_template)
-        print(generated_response)
+        generated_responses, response_id = generate_some_template(client, message_content=processed_template)
+        print(generated_responses[0])
         print("-----------------------------")
-        template_generator_code = extract_template_generator_from_gpt_response(generated_response)
-        print(template_generator_code)
-        print("-----------------------------")
+        for i in range(len(generated_responses)):
+            generated_response = generated_responses[i]
+            print(f"Response {i}:")
+            template_generator_code = extract_template_generator_from_gpt_response(generated_response)
+            print(template_generator_code)
+            print("-----------------------------")
 
-        output_file = f"output/output_{response_id}"
-        os.makedirs(output_file, exist_ok=True)
-        run_template_generator_code(template_generator_code, output_file)
+            output_file = f"output/output_{response_id}/template_{i}"
+            os.makedirs(output_file, exist_ok=True)
+            run_template_generator_code(template_generator_code, output_file)
